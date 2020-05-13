@@ -3,6 +3,7 @@ local config = require "core.config"
 local style = require "core.style"
 local command
 local keymap
+local context_menu
 local RootView
 local StatusView
 local CommandView
@@ -76,6 +77,7 @@ end
 function core.init()
   command = require "core.command"
   keymap = require "core.keymap"
+  context_menu = require "core.contextmenu"
   RootView = require "core.rootview"
   StatusView = require "core.statusview"
   CommandView = require "core.commandview"
@@ -375,6 +377,7 @@ function core.step()
   core.clip_rect_stack[1] = { 0, 0, width, height }
   renderer.set_clip_rect(table.unpack(core.clip_rect_stack[1]))
   core.root_view:draw()
+  context_menu.draw()
   renderer.end_frame()
 end
 

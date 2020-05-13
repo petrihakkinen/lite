@@ -5,6 +5,7 @@ local config = require "core.config"
 local keymap = require "core.keymap"
 local style = require "core.style"
 local View = require "core.view"
+local context_menu = require "core.contextmenu"
 
 
 local TreeView = View:extend()
@@ -117,9 +118,28 @@ function TreeView:on_mouse_pressed(button, x, y)
   elseif self.hovered_item.type == "dir" then
     self.hovered_item.expanded = not self.hovered_item.expanded
   else
-    core.try(function()
-      core.root_view:open_doc(core.open_doc(self.hovered_item.filename))
-    end)
+    if button == "right" then
+      -- context menu
+      local filename = self.hovered_item.abs_filename
+      context_menu.show(x, y, { "Rename", "Delete" }, {
+        ["Rename"] = function()
+          core.command_view:enter("New Name", function(text, item)
+            local old_path = string.match(filename, "(.-)([^\\/]-%.?([^%.\\/]*))$") -- TODO: simplify pattern!
+            local new_name = old_path .. text
+            os.rename(filename, new_name)
+            core.log("Renamed to " .. new_name)
+          end)
+        end,
+        ["Delete"] = function()
+          os.remove(filename)
+          core.log("Deleted " .. filename)
+        end,
+      })
+    else
+      core.try(function()
+        core.root_view:open_doc(core.open_doc(self.hovered_item.filename))
+      end)
+    end
   end
 end
 

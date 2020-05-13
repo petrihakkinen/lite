@@ -2,6 +2,7 @@ local core = require "core"
 local common = require "core.common"
 local style = require "core.style"
 local keymap = require "core.keymap"
+local context_menu = require "core.contextmenu"
 local Object = require "core.object"
 local View = require "core.view"
 local DocView = require "core.docview"
@@ -400,6 +401,12 @@ end
 
 
 function RootView:on_mouse_pressed(button, x, y, clicks)
+  if context_menu.is_overlapping_with_point(x, y) then
+    context_menu.on_mouse_pressed(button, x, y, clicks)
+    return
+  end
+  context_menu.cancel()
+
   local div = self.root_node:get_divider_overlapping_point(x, y)
   if div then
     self.dragged_divider = div
@@ -442,6 +449,13 @@ function RootView:on_mouse_moved(x, y, dx, dy)
   end
 
   self.mouse.x, self.mouse.y = x, y
+
+  if context_menu.is_overlapping_with_point(x, y) then
+    context_menu.on_mouse_moved(x, y, dx, dy)
+    x = -1
+    y = -1
+  end
+
   self.root_node:on_mouse_moved(x, y, dx, dy)
 
   local node = self.root_node:get_child_overlapping_point(x, y)
